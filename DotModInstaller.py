@@ -1,8 +1,11 @@
-# Compile with python -m nuitka --onefile --windows-onefile-tempdir --windows-icon-from-ico=DMEXE.ico DotModInstaller.py
+# Compile with python -m nuitka --onefile --windows-onefile-tempdir --windows-icon-from-ico=DMEXE.ico --enable-plugin=tk-inter DotModInstaller.py
 
 # Imports
 # File path checking
 import os
+
+# To exit installer if user does a bad
+import sys
 
 # File tree copying and removal
 import shutil
@@ -10,6 +13,19 @@ import shutil
 # Config (This installer is meant to be universal, for both the main mod and addons)
 import configparser
 
+# For directory selection dialog
+import tkinter as tk
+from tkinter import filedialog as fd
+
+def select_directory():
+    """Opens a file dialog to select a directory and returns it. Exits the program if no directory is selected."""
+    root = tk.Tk()
+    root.withdraw()
+    selected_directory = fd.askdirectory(title="Select your Cold Waters Install Directory", initialdir=os.getcwd(), mustexist=True)
+    root.destroy()
+    if selected_directory == "":
+        sys.exit("You did not select a directory.")
+    return selected_directory
 
 # Good programming practices
 def main():
@@ -30,21 +46,17 @@ def main():
         install_directory = "D:/Games/steamapps/common/Cold Waters"
 
     else:
-        print("Auto-locate failed.")
-        install_directory = input(
-            "Please input the directory of your Cold Waters install: "
-        )
+        print("Auto-locate failed.\nPlease select the directory of your Cold Waters install.")
+        install_directory = select_directory()
 
     # Make sure everything's correct:
     if (
         input(
-            f"This will install {mod_name} to {install_directory}. \nIs that correct? Y/N: "
+            f"This will install {mod_name} to {install_directory}. \nIs that correct? (Y/N): "
         ).lower()
         != "y"
     ):
-        install_directory = input(
-            "Please input the directory of your Cold Waters install: "
-        )
+        install_directory = select_directory()
 
     mod_target = install_directory + f"/MODS/{mod_name}/ColdWaters_Data"
 
